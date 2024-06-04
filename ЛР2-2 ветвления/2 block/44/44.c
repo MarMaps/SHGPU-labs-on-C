@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **env)
 	sum = x + y + z;
 	
 	if ((fabs(x - y) < eps) || (fabs(y - z) < eps) || (fabs(x - z) < eps)) {
-		printf("по условию числа не должны быть равны\n");
+		printf("числа не являются попрано различимыми\n");
 	}
 	
 	else if (sum < 1) {
