@@ -32,7 +32,7 @@ int main(int argc, char **argv, char **env)
 			}
 	}
 	
-	else if (sum > 1) {
+	else if (sum >= 1) {
 		if (x < y && x < z) {
 			x2_min = (y + z)/2;
 			printf("%f\n%f\n%f\n", x2_min, y, z);
