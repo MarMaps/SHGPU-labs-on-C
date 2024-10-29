@@ -28,8 +28,8 @@ int main(int argc, char **argv)
 		sx1 = sx1 + sy1;
 		i1_1++;
 
-		printf("x(%d) = x(%d) + y(%d)\n", sx1, temp_sx1, sy1);
-		printf("кол-во операций: %d\n", i1_1);
+		//printf("x(%d) = x(%d) + y(%d)\n", sx1, temp_sx1, sy1);
+		//printf("кол-во операций: %d\n", i1_1);
 		//для проверки
 		if ((sy1 > 0 && sx1 < temp_sx1) || (sy1 < 0 && sx1 > temp_sx1)) {
             printf("произошел переход через границу\n");
