@@ -1,10 +1,10 @@
-#include<stdio.h>
+#include <stdio.h>
 
 int main()
 {
     int n, sum;
     
-    printf("введите число:");
+    printf("введите число: ");
     scanf("%d", &n);
     
     for (int i = 1; i < n; i++) {

@@ -18,9 +18,9 @@ int main(int argc, char **argv, char **env) {
             }
         }
 
-        printf("сумма делителей числа %d = %d\n", num, sum);
+        //printf("сумма делителей числа %d = %d\n", num, sum);
 
-        
+        max_sum = 0;
         if (sum > max_sum) {
             max_sum = sum;
             max_num = num;
