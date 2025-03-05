@@ -1,34 +1,44 @@
 #include <stdio.h>
 
-int main(int argc, char **argv, char **env) {
+int main(int argc, char **argv) 
+{
     int m, n, sum, max_sum, max_num, num;
-    
-    printf("введите диапазон от m до n: ");
+
+    printf("диапазон от m до n: ");
     scanf("%d %d", &m, &n);
 
     max_num = m;
-    num = m;
-    
-    while(num <= n) {
+    max_sum = 0;
+
+    for (num = m; num <= n; num++) {
         sum = 0;
 
-        for (int i = 1; i <= num; i++) {
-            if (num % i == 0) {
-                sum += i;
+        if (num < 0) {
+            for (int i = num; i <= -1; i++) {
+                if (num % i == 0) {
+                    sum += i;
+                }
+            }
+        }
+        
+        else {
+            for (int i = 1; i <= num; i++) {
+                if (num % i == 0) {
+                    sum += i;
+                }
             }
         }
 
-        //printf("сумма делителей числа %d = %d\n", num, sum);
+        printf("сумма делителей числа %d = %d\n", num, sum);
 
-        max_sum = 0;
         if (sum > max_sum) {
             max_sum = sum;
             max_num = num;
         }
-        num++;
     }
 
-    printf("число с максимальной суммой делителей: %d (сумма = %d)\n", max_num, max_sum);
-    
+    printf("число с макс суммой делителей: %d(сумма = %d)\n", max_num, max_sum);
+
     return 0;
 }
+//если цисло отрицательное то учитывать только отриц делители
