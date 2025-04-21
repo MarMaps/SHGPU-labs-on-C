@@ -1,33 +1,39 @@
 #include <stdio.h>
+#include <math.h>
 
-int main() {
+int main()
+{
     int n, m;
-
-    printf("введите диапазон (n m): ");
     scanf("%d %d", &n, &m);
 
-    for (int x = n; x <= m; x++) {
-        int sum_x = 0;
-
-        for (int i = 1; i < x; i++) {
-            if (x % i == 0) {
+    for (int x = n; x <= m; x++)
+    {
+        int sum_x = 1;
+        for (int i = 2; i <= (int)sqrt(x); i++)
+        {
+            if (x % i == 0)
+            {
                 sum_x += i;
+                if (i != x/i)
+                    sum_x += x/i;
             }
         }
 
-        int y = sum_x;
- 
-        if (y > x && y <= m) {
-            int sum_y = 0;//, j = 1;
-
-            for (int j = 1; j < y; j++) {
-                if (y % j == 0) {
-                    sum_y += j;
+        if (sum_x > x && sum_x <= m) //чтоы не дублировать пары
+        {
+            int sum_y = 1;
+            for (int i = 2; i <= (int)sqrt(sum_x); i++) {
+                if (sum_x % i == 0)
+                {
+                    sum_y += i;
+                    if (i != sum_x/i)
+                        sum_y += sum_x/i;
                 }
             }
 
-            if ((sum_y == x) && (sum_x == y)) {
-                printf("дружественная пара: %d и %d\n", x, y);
+            if (sum_y == x)
+            {
+                printf("дружественная пара: %d %d\n", x, sum_x);
             }
         }
     }
