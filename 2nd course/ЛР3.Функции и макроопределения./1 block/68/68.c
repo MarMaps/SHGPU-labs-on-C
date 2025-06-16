@@ -1,26 +1,38 @@
 #include <stdio.h>
-#define MAX_DIGITS 4
 
-#define PAL(s) (s[0] == s[3] && s[1] == s[2])
+#define PAL(n) ((n) >= 0 && (n) <= 9999) && (n / 1000 == n % 10) && (n / 100 % 10 == n / 10 % 10)
 
-void intTOstring(int n, char *s) {
-    sprintf(s, "%04d", n);
+int palindrome(int n)
+{
+	if (n < 0 || n > 9999)
+		return 0;
+	int n1 = n / 1000;
+	int n2 = (n / 100) % 10;
+	int n3 = (n / 10) % 10;
+	int n4 = n % 10;
+
+	return n1 == n4 && n2 == n3;
 }
 
-int main() {
-    int n;
-    char str[5];
+int main()
+{
+	int n;
+	printf("число n: ");
+	scanf("%d", &n);
 
-    printf("введите число: ");
-    scanf("%d", &n);
+	printf("макроопределение: \n");
+	if (PAL(n)) {
+		printf("%d - палиндром\n", n);
+	} else {
+		printf("%d - не палиндром\n", n);
+	}
 
-    intTOstring(n, str);
+	printf("функции: \n");
+	if (palindrome(n)) {
+		printf("%d - палиндром\n", n);
+	} else {
+		printf("%d - не палиндром\n", n);
+	}
 
-    if (PAL(str)) {
-        printf("%s явл палиндромом\n", str);
-    } else {
-        printf("%s не явл палиндромом\n", str);
-    }
-
-    return 0;
+	return 0;
 }

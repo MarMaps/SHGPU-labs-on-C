@@ -19,7 +19,7 @@ int main()
             }
         }
 
-        if (sum_x > x && sum_x <= m) //чтоы не дублировать пары
+        if (sum_x > x && sum_x <= m) 
         {
             int sum_y = 1;
             for (int i = 2; i <= (int)sqrt(sum_x); i++) {

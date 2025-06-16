@@ -60,7 +60,7 @@ int main() {
 
         // Добавляем прямоугольник в массив
         rect_count++;
-        printf("Size of Rectangle: %zu bytes\n", sizeof(Rectangle));
+        printf("размер в байтах: %zu \n", sizeof(Rectangle));
         rectangles = realloc(rectangles, rect_count * sizeof(Rectangle));
         rectangles[rect_count-1] = (Rectangle){
             x1, y1, x2, y2, {(unsigned char)r, (unsigned char)g, (unsigned char)b}
