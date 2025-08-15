@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h> 
+#include <string.h> 
 
 void zamena(char *str, int pos) {
 	for (int i = pos; str[i] != '\0'; i++) {
@@ -18,8 +18,8 @@ int main(int argc, char **argv, char **env)
 	printf("строка символов: ");
 	scanf("%ms", &str);
 	
-	//int k = strlen(str);
-	//printf("%d\n", k);
+	int k = strlen(str);
+	printf("%d\n", k);
 	
 	int pos;
 	printf("позиция: ");
@@ -28,6 +28,7 @@ int main(int argc, char **argv, char **env)
 	zamena(str, pos);
 
 	printf("%s\n", str);
+	
 	free(str);
 
 	return 0;

@@ -12,12 +12,15 @@ void del(char * s1, char * s2)
 			j++;
 		}
 
+        printf("%d", j);
         if (s2[j] == '\0') {
 			if (k == i) {
 				k++;
 				continue;
 			}
 			s1[k] = s1[i];
+			printf("ki %d %d", k, i);
+			exit(1);
 			k++;
 		}
     }
