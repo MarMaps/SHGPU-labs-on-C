@@ -6,7 +6,7 @@
 #include <grp.h>
 #include <errno.h> 
 #include <unistd.h>
-#include <stdbool.h>  
+#include <limits.h>
 
 const char* get_file_type(mode_t mode) {
     if (S_ISDIR(mode))  return "каталог";
@@ -18,25 +18,28 @@ const char* get_file_type(mode_t mode) {
     return "обычный файл";
 }
 
-void print_spec_prava(mode_t mode) {
-    bool flag = false;
+void print_spec_prava(mode_t mode, int is_dir) {
+    int flag = 0;
     printf("спецправа: ");
     
     if (mode & S_ISUID) {
-        printf("SUID(запуск от имени хозяина)");
-        flag = true;
+        if (is_dir) printf("игнорируется для каталогов");
+        else printf("SUID (запуск от имени хозяина)");
+        flag = 1;
     }
     
     if (mode & S_ISGID) {
         if (flag) printf(", ");
-        printf("SGID (запуск от имени группы)");
-        flag = true;
+        if (is_dir) printf("новые файлы наследуют группу каталога");
+        else printf("SGID (запуск от имени группы)");
+        flag = 1;
     }
     
     if (mode & S_ISVTX) {
         if (flag) printf(", ");
-        printf("sticky(пожелание сохранения в ОЗУ после завершения)");
-        flag = true;
+        if (is_dir) printf("удалять файлы могут только владельцы");
+        else printf("Sticky (пожелание сохранения в ОЗУ после завершения)");
+        flag = 1;
     }
     
     if (!flag) {
@@ -46,21 +49,23 @@ void print_spec_prava(mode_t mode) {
     printf("\n");
 }
 
-void otctup(int depth) {
+void otstup(int depth) {
     for (int i = 0; i < depth; i++) {
         printf("  ");
     }
 }
 
 void print_file_info(const char *fullpath, const char *filename, struct stat *st, int depth) {
-    otctup(depth);
+    int is_dir = S_ISDIR(st->st_mode);
+    
+    otstup(depth);
     printf("файл: %s\n", fullpath);
     
-    otctup(depth);
+    otstup(depth);
     printf("тип: %s\n", get_file_type(st->st_mode));
     
     struct passwd *pw = getpwuid(st->st_uid);
-    otctup(depth);
+    otstup(depth);
     if (pw != NULL) {
         printf("хозяин: %s (%d)\n", pw->pw_name, st->st_uid);
     } else {
@@ -68,39 +73,79 @@ void print_file_info(const char *fullpath, const char *filename, struct stat *st
     }
     
     struct group *gr = getgrgid(st->st_gid);
-    otctup(depth);
+    otstup(depth);
     if (gr != NULL) {
         printf("группа: %s (%d)\n", gr->gr_name, st->st_gid);
     } else {
-        printf("группа: неизвестно (%d)\n", st->st_gid); }
+        printf("группа: неизвестно (%d)\n", st->st_gid);
+    }
     
-    otctup(depth);
+    // права хозяина
+    otstup(depth);
     printf("права хозяина: ");
-    if (st->st_mode & S_IRUSR) printf("чтение ");
-    if (st->st_mode & S_IWUSR) printf("запись ");
-    if (st->st_mode & S_IXUSR) printf("выполнение ");
-    if (!(st->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR))) printf("нет прав");
+    if (st->st_mode & S_IRUSR) {
+        if (is_dir) printf("просмотр содержимого каталога ");
+        else printf("чтение ");
+    }
+    if (st->st_mode & S_IWUSR) {
+        if (is_dir) printf("создание, удаление и переименование файлов ");
+        else printf("запись ");
+    }
+    if (st->st_mode & S_IXUSR) {
+        if (is_dir) printf("вход в каталог ");
+        else printf("выполнение ");
+    }
+    if (!(st->st_mode & (S_IRUSR | S_IWUSR | S_IXUSR))) {
+        if (is_dir) printf("доступ к каталогу запрещён");
+        else printf("нет прав");
+    }
     printf("\n");
     
-    otctup(depth);
+    // права группы
+    otstup(depth);
     printf("права группы: ");
-    if (st->st_mode & S_IRGRP) printf("чтение ");
-    if (st->st_mode & S_IWGRP) printf("запись ");
-    if (st->st_mode & S_IXGRP) printf("выполнение ");
-    if (!(st->st_mode & (S_IRGRP | S_IWGRP | S_IXGRP))) printf("нет прав");
+    if (st->st_mode & S_IRGRP) {
+        if (is_dir) printf("просмотр содержимого каталога ");
+        else        printf("чтение ");
+    }
+    if (st->st_mode & S_IWGRP) {
+        if (is_dir) printf("создание, удаление и переименование файлов ");
+        else        printf("запись ");
+    }
+    if (st->st_mode & S_IXGRP) {
+        if (is_dir) printf("вход в каталог ");
+        else        printf("выполнение ");
+    }
+    if (!(st->st_mode & (S_IRGRP | S_IWGRP | S_IXGRP))) {
+        if (is_dir) printf("доступ к каталогу запрещён");
+        else        printf("нет прав");
+    }
     printf("\n");
     
-    otctup(depth);
+    // права остальных
+    otstup(depth);
     printf("права остальных: ");
-    if (st->st_mode & S_IROTH) printf("чтение ");
-    if (st->st_mode & S_IWOTH) printf("запись ");
-    if (st->st_mode & S_IXOTH) printf("выполнение ");
-    if (!(st->st_mode & (S_IROTH | S_IWOTH | S_IXOTH))) printf("нет прав");
+    if (st->st_mode & S_IROTH) {
+        if (is_dir) printf("просмотр содержимого каталога ");
+        else        printf("чтение ");
+    }
+    if (st->st_mode & S_IWOTH) {
+        if (is_dir) printf("создание, удаление и переименование файлов ");
+        else        printf("запись ");
+    }
+    if (st->st_mode & S_IXOTH) {
+        if (is_dir) printf("вход в каталог ");
+        else        printf("выполнение ");
+    }
+    if (!(st->st_mode & (S_IROTH | S_IWOTH | S_IXOTH))) {
+        if (is_dir) printf("доступ к каталогу запрещён");
+        else        printf("нет прав");
+    }
     printf("\n");
     
-    //спецправа
-    otctup(depth);
-    print_spec_prava(st->st_mode);   
+    // спецправа
+    otstup(depth);
+    print_spec_prava(st->st_mode, is_dir);   
     printf("\n");
 }
 
@@ -108,7 +153,7 @@ void recurs_dir(const char *path, int depth) {
     DIR *d = opendir(path);
     
     if (d == NULL) {
-        otctup(depth);
+        otstup(depth);
         printf("недоступен %s: ", path);
         if (errno == EACCES) {
             printf("нет прав на чтение каталога\n");
@@ -123,7 +168,11 @@ void recurs_dir(const char *path, int depth) {
     }
     
     struct dirent *entry;
-    char fullpath[1024];
+    char fullpath[PATH_MAX];
+    /*struct stat buf;
+    lstat(".", &buf);
+    printf("%d", buf.f_namelen);
+    __fsword_t fullpath = buf.f_namelen;*/
     
     while ((entry = readdir(d)) != NULL) {
         if (strcmp(entry->d_name, ".") == 0 || 
@@ -131,12 +180,12 @@ void recurs_dir(const char *path, int depth) {
             continue;
         }
         
-        //полный путь
         snprintf(fullpath, sizeof(fullpath), "%s/%s", path, entry->d_name);
         
         struct stat st;
         if (lstat(fullpath, &st) == -1) {
-            otctup(depth);
+		//if (stat(fullpath, &st) == -1) { 
+            otstup(depth);
             printf("не удалось получить информацию о %s: %s\n", 
                    fullpath, strerror(errno));
             continue;
@@ -144,7 +193,6 @@ void recurs_dir(const char *path, int depth) {
         
         print_file_info(fullpath, entry->d_name, &st, depth);
         
-        //если каталог-торекурсия
         if (S_ISDIR(st.st_mode)) {
             recurs_dir(fullpath, depth + 1);
         }
@@ -167,4 +215,3 @@ int main(int argc, char *argv[]) {
     
     return 0;
 }
-
