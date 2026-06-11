@@ -1,60 +1,81 @@
 #include <stdio.h>
-#include <dirent.h>
+#include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <limits.h>
+#include <unistd.h>
 
-void dir_info(const char *path) {
-    DIR *d = opendir(path);
-    if (d == NULL) {
-        printf("не удалось открыть папку %s\n", path);
+void reg_file(const char *path, mode_t mode) {
+    FILE *f = fopen(path, "w");
+    if (f == NULL) {
+        perror("Ошибка создания файла");
         return;
     }
+    fclose(f);
+    chmod(path, mode & 07777);
+}
+
+void sim_link(const char *orig, const char *new) {
+    char buf[PATH_MAX];
+    int len = readlink(orig, buf, sizeof(buf) - 1);
+    if (len < 0) {
+        perror("Ошибка чтения ссылки");
+        return;
+    }
+    buf[len] = '\0'; 
+    symlink(buf, new);
+}
+
+void copy_dir(const char *orig_dir, const char *new_dir) {
+    DIR *d = opendir(orig_dir);
+    if (!d) return;
 
     struct dirent *entry;
-    char fullpath[PATH_MAX];
+    char orig_path[PATH_MAX];
+    char new_path[PATH_MAX];
     struct stat st;
 
     while ((entry = readdir(d)) != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || 
-            strcmp(entry->d_name, "..") == 0) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
             continue;
-        }
 
-        snprintf(fullpath, sizeof(fullpath), "%s/%s", path, entry->d_name);
+        snprintf(orig_path, sizeof(orig_path), "%s/%s", orig_dir, entry->d_name);
+        snprintf(new_path, sizeof(new_path), "%s/%s", new_dir, entry->d_name);
 
-        if (lstat(fullpath, &st) == -1) {
-            printf("Не удалось получить информацию о %s\n", entry->d_name); 
-            continue;
-        }
+        if (lstat(orig_path, &st) == -1) continue;
 
-        printf("Имя: %s -> ", entry->d_name);
-        
         if (S_ISDIR(st.st_mode)) {
-            printf("тип: папка\n");
-        }
+            mkdir(new_path, st.st_mode & 07777);
+            chmod(new_path, st.st_mode & 07777);
+            copy_dir(orig_path, new_path);
+        } 
         else if (S_ISLNK(st.st_mode)) {
-            printf("тип: симв ссылка\n");
-        }
+            sim_link(orig_path, new_path);
+        } 
         else {
-            printf("тип: файл \n");
+            reg_file(new_path, st.st_mode);
         }
     }
-    
     closedir(d);
 }
 
 int main(int argc, char **argv) {
-    const char *start_path;
-
-    if (argc > 1) {
-        start_path = argv[1];
-    } else {
-        start_path = ".";
+    if (argc < 3) {
+        return 1;
     }
-    
-    printf("Содержимое каталога: %s\n\n", start_path);
-    dir_info(start_path);
+
+    struct stat st;
+    if (lstat(argv[1], &st) == -1) {
+        perror("каталог не найден");
+        return 1;
+    }
+
+    mkdir(argv[2], st.st_mode & 07777);
+    chmod(argv[2], st.st_mode & 07777);
+
+    copy_dir(argv[1], argv[2]);
+
+    printf("копия создана\n");
     return 0;
 }
