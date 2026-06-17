@@ -42,6 +42,8 @@ void draw_rectangle(RGB* image, int width, int height,
 }
 
 int main() {
+	freopen("r.txt", "r", stdin);
+	
     int width, height;
     scanf("%d %d", &width, &height);
 
@@ -61,17 +63,16 @@ int main() {
         }
 	
 		rects = realloc(rects, (rect_count + 1) * sizeof(rect_t));
-        rects[rect_count] = (rect_t){x1, y1, x2, y2, {(unsigned char)r, (unsigned char)g, (unsigned char)b}};
+        rects[rect_count] = (rect_t){x1, y1, x2, y2, {r, g, b}};
         rect_count++;
     }
 
     for (int i = 0; i < rect_count; i++) {
-        rect_t r = rects[i];
         if (i == 0) {
-            draw_rectangle(image, width, height, r.x1, r.y1, r.x2, r.y2, r.color);
+            draw_rectangle(image, width, height, rects[i].x1, rects[i].y1, rects[i].x2, rects[i].y2, rects[i].color);
         } else {
-            draw_rectangle(image, width, height,r.x1 - 1, r.y1 - 1, r.x2 + 1, r.y2 + 1,(RGB){0, 0, 0});
-            draw_rectangle(image, width, height,r.x1, r.y1, r.x2, r.y2, r.color);
+            draw_rectangle(image, width, height,rects[i].x1, rects[i].y1, rects[i].x2, rects[i].y2,(RGB){0, 0, 0});
+            draw_rectangle(image, width, height,rects[i].x1+1, rects[i].y1+1, rects[i].x2-1, rects[i].y2-1, rects[i].color);
         }
     }
     
@@ -85,16 +86,16 @@ int main() {
         printf("\n");
     }
 	
-	FILE *f = fopen("result.ppm", "w"); 
+	FILE *f = fopen("res.ppm", "w"); 
 	if (f) {
-		fprintf(f, "P3\n%d %d\n255\n", width, height);
+		fprintf(f,"P3\n%d %d\n255\n", width, height);
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				RGB px = image[y * width + x];
 				fprintf(f, "%d %d %d", px.r, px.g, px.b);
 				if (x < width - 1) fprintf(f, " ");
 			}
-			fprintf(f, "\n");
+			fprintf(f,"\n");
 		}
 		fclose(f);
 	}
