@@ -9,16 +9,8 @@ int main(int argc, char **argv)
         return 1;
     }
     
-    unsigned char signature[2];
     int smeshenie = 0;
     int width = 0, height = 0, bits_on_pixel = 0;
-
-    //сигнатура(что в файле есть BM)
-    fread(signature, 1, 2, f);
-    if (signature[0] != 'B' || signature[1] != 'M') {
-        printf("это не BMP файл\n");
-        fclose(f); return 1;
-    }
 
     fseek(f, 10, SEEK_SET);
     fread(&smeshenie, 4, 1, f);
@@ -32,16 +24,29 @@ int main(int argc, char **argv)
 
     if (width != height) {
         printf("изображение не квадратное\n");
-        fclose(f); return 1;
-    }
-    if (bits_on_pixel != 24) {
-        printf("поддерживается только 24-битный BMP\n");
-        fclose(f); return 1;
+        fclose(f);
+        return 1;
     }
 
     printf("размер: %dx%d, битность: %d, данные начинаются с байта: %d\n", width, height, bits_on_pixel, smeshenie);
+    long width_row = (width * 3 + 3) - (width * 3 + 3)%4;
+    printf("ширина строки в байтах: %ld\n", width_row);
+    
+    unsigned char color[3] = {0, 0, 0}; 
+    long pos;
+
+    for (int i = 0; i < height; i++) {
+        pos = smeshenie + i * width_row + i * 3;
+        fseek(f, pos, SEEK_SET);
+        fwrite(color, 1, 3, f);
+
+        pos = smeshenie + i * width_row + (height - i - 1) * 3;
+        fseek(f, pos, SEEK_SET);
+        fwrite(color, 1, 3, f);
+    }
 
     fclose(f);
+
     
 	return 0;
 }
