@@ -656,3 +656,44 @@ touch existing.txt
 - **Компиляция под Windows.** Функции `link`, `symlink`, `unlink`, `stat` — это POSIX-функции, они работают в Linux/macOS. Под Windows (без WSL или MinGW с поддержкой POSIX) собрать эту программу не получится. Проверяйте задание в Linux-окружении.
 - **Тестирование `-m` "портит" тестовые файлы.** После `./cml -m a.txt d.txt`, файла `a.txt` больше не будет (он переименован в `d.txt`). Не забывайте пересоздавать тестовые файлы (`touch`/`echo`) перед повторными тестами.
 - **Одинаковые исходный и результирующий файл.** Задание явно этого не требует проверять, но если преподаватель спросит "а что если source и target — один и тот же файл?", будьте готовы сказать, что сейчас это не обрабатывается отдельно (например, `copy_file` с одинаковым src/dst через `O_TRUNC` обнулит файл), и это можно упомянуть как известное ограничение/возможное улучшение.
+
+=============
+
+```c
+#include <stdio.h>
+
+#define BUFFER_SIZE 4096
+
+int copy_file(const char *src, const char *dst)
+{
+    FILE *src_fp = fopen(src, "rb");
+    if (src_fp == NULL)
+    {
+        perror("Ошибка открытия исходного файла");
+        return 0;
+    }
+    FILE *dst_fp = fopen(dst, "wb");
+    if (dst_fp == NULL)
+    {
+        perror("Ошибка открытия результирующего файла");
+        fclose(src_fp);
+        return 0;
+    }
+    char buffer[BUFFER_SIZE];
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, src_fp)) > 0)
+    {
+        size_t bytes_written = fwrite(buffer, 1, bytes_read, dst_fp);
+        if (bytes_written != bytes_read)
+        {
+            perror("Ошибка записи");
+            fclose(src_fp);
+            fclose(dst_fp);
+            return 0;
+        }
+    }
+    fclose(src_fp);
+    fclose(dst_fp);
+    return 1;
+}
+```
