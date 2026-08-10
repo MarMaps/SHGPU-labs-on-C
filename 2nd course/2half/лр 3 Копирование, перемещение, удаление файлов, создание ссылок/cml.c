@@ -18,7 +18,7 @@ void help() {
 int is_regular_file_or_link(const char *path)
 {
     struct stat st;
-    if (stat(path, &st) != 0)
+    if (lstat(path, &st) != 0)
         return 0;
 
     return S_ISREG(st.st_mode) || S_ISLNK(st.st_mode);
@@ -40,7 +40,7 @@ int copy_file(const char *nach, const char *res)
 	FILE *res_f = fopen(res, "wb");
 	if (res_f == NULL) {
 		printf("ошибка открытия результирующего файла");
-		fclose(res_f);
+		fclose(nach_f);
 		return 0;
 	}
 	
@@ -49,7 +49,7 @@ int copy_file(const char *nach, const char *res)
 	size_t bytes_write;
 	while ((bytes_read = fread(buf, 1, BUFFER_S, nach_f)) > 0) {
 		bytes_write = fwrite(buf, 1, bytes_read, res_f);
-		if (bytes_write != bytes_read) {//?
+		if (bytes_write != bytes_read) {
 			printf("ошибка записи");
 			fclose(nach_f);
 			fclose(res_f);
@@ -63,9 +63,10 @@ int copy_file(const char *nach, const char *res)
 
 int main(int argc, char **argv)
 {
-	/*int h_flag = 0, l_flag = 0, m_flag = 0;
+	int h_flag = 0, l_flag = 0, m_flag = 0;
     char *nach = NULL, *res = NULL;
     
+    printf("argc - %d\n", argc);
     //пров на колво аргументов
     if (argc < 3 || argc > 4) {
         printf("ошибка: неверное количество аргументов\n");
@@ -104,13 +105,25 @@ int main(int argc, char **argv)
         return 1;
 	}
 	
-	int res_exists = file_exists(res);
-	//printf("%d", target_exists);
-    if (res_exists && !is_regular_file_or_link(res))
-    {
-        printf("ошибка: результирующий файл существует, но не является обычным файлом или ссылкой\n");
-        return 1;
-    } 
+	struct stat nach_stat;
+    if (lstat(res, &nach_stat) == 0) { // файл существует
+        if (!is_regular_file_or_link(res)) {
+            printf("ошибка: результирующий файл существует, но не является обычным файлом или ссылкой\n");
+            return 1;
+        }
+        printf("результирующий файл существует. Удалить? (y/n): ");
+        char answer;
+        scanf(" %c", &answer);
+        if (answer != 'y') {
+            printf("Операция отменена.\n");
+            return 0;
+        }
+        if (unlink(res) != 0) {
+            perror("ошибка удаления результирующего файла");
+            return 1;
+        }
+    }
+	
 	if (h_flag) {
         if (link(nach, res) != 0) {
             perror("ошибка создания жесткой ссылки");
@@ -141,9 +154,9 @@ int main(int argc, char **argv)
         if (!copy_file(nach, res))
             return 1;
         printf("файл скопирован: '%s' -> '%s'\n", nach, res);
-    }*/
+    }
     //тесты 3 дня
-    if (copy_file("a.txt", "copy_of_a.txt"))
+    /*if (copy_file("a.txt", "copy_of_a.txt"))
         printf("Копирование успешно\n");
 
     if (rename("copy_of_a.txt", "renamed.txt") == 0)
@@ -159,7 +172,7 @@ int main(int argc, char **argv)
     if (symlink("a.txt", "symlink.txt") == 0)
         printf("Символическая ссылка создана\n");
     else
-        printf("symlink");
+        printf("symlink");*/
         
 	return 0;
 }
