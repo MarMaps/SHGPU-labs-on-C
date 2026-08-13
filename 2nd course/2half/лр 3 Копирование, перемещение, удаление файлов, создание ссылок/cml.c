@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	int h_flag = 0, l_flag = 0, m_flag = 0;
     char *nach = NULL, *res = NULL;
     
-    printf("argc - %d\n", argc);
+    //printf("argc - %d\n", argc);
     //пров на колво аргументов
     if (argc < 3 || argc > 4) {
         printf("ошибка: неверное количество аргументов\n");
@@ -88,7 +88,12 @@ int main(int argc, char **argv)
         }
         nach = argv[2];
         res = argv[3];
-    } else { //нет опции
+    } else {
+		if (argv[1][0] == '-') {
+            printf("ошибка: указана опция, но отсутствует результирующий файл\n");
+            help();
+            return 1;
+        }
         nach = argv[1];
         res = argv[2];
     }
@@ -155,24 +160,6 @@ int main(int argc, char **argv)
             return 1;
         printf("файл скопирован: '%s' -> '%s'\n", nach, res);
     }
-    //тесты 3 дня
-    /*if (copy_file("a.txt", "copy_of_a.txt"))
-        printf("Копирование успешно\n");
-
-    if (rename("copy_of_a.txt", "renamed.txt") == 0)
-        printf("Переименование успешно\n");
-    else
-        printf("rename");
-
-    if (link("a.txt", "hardlink.txt") == 0)
-        printf("Жесткая ссылка создана\n");
-    else
-        printf("link");
-
-    if (symlink("a.txt", "symlink.txt") == 0)
-        printf("Символическая ссылка создана\n");
-    else
-        printf("symlink");*/
         
 	return 0;
 }
