@@ -27,7 +27,7 @@ int is_regular_file_or_link(const char *path)
 int file_exists(const char *path)
 {
     struct stat st;
-    return stat(path, &st) == 0;
+    return lstat(path, &st) == 0;
 }
 
 int copy_file(const char *nach, const char *res)
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 	int h_flag = 0, l_flag = 0, m_flag = 0;
     char *nach = NULL, *res = NULL;
     
-    //printf("argc - %d\n", argc);
+    printf("argc - %d\n", argc);
     //пров на колво аргументов
     if (argc < 3 || argc > 4) {
         printf("ошибка: неверное количество аргументов\n");
@@ -89,14 +89,9 @@ int main(int argc, char **argv)
         nach = argv[2];
         res = argv[3];
     } else {
-		if (argv[1][0] == '-') {
-            printf("ошибка: указана опция, но отсутствует результирующий файл\n");
-            help();
-            return 1;
-        }
-        nach = argv[1];
-        res = argv[2];
-    }
+		nach = argv[1];
+		res = argv[2];
+	}
     //printf("опции: h=%d, l=%d, m=%d\n", h_flag, l_flag, m_flag);
     //printf("исходный: %s, результирующий: %s\n", nach, res);
     
@@ -120,18 +115,18 @@ int main(int argc, char **argv)
         char answer;
         scanf(" %c", &answer);
         if (answer != 'y') {
-            printf("Операция отменена.\n");
+            printf("операция отменена\n");
             return 0;
         }
         if (unlink(res) != 0) {
-            perror("ошибка удаления результирующего файла");
+            printf("ошибка удаления результирующего файла");
             return 1;
         }
     }
 	
 	if (h_flag) {
         if (link(nach, res) != 0) {
-            perror("ошибка создания жесткой ссылки");
+            printf("ошибка создания жесткой ссылки");
             return 1;
         }
         printf("жесткая ссылка создана: '%s' -> '%s'\n", res, nach);
@@ -140,7 +135,7 @@ int main(int argc, char **argv)
     {
         if (symlink(nach, res) != 0)
         {
-            perror("ошибка создания символической ссылки");
+            printf("ошибка создания символической ссылки");
             return 1;
         }
         printf("символическая ссылка создана: '%s' -> '%s'\n", res, nach);
@@ -149,7 +144,7 @@ int main(int argc, char **argv)
     {
         if (rename(nach, res) != 0)
         {
-            perror("ошибка перемещения файла");
+            printf("ошибка перемещения файла");
             return 1;
         }
         printf("файл перемещен: '%s' -> '%s'\n", nach, res);
