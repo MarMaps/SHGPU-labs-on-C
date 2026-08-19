@@ -131,8 +131,7 @@ int main(int argc, char **argv)
         }
         printf("жесткая ссылка создана: '%s' -> '%s'\n", res, nach);
     }
-    else if (l_flag)
-    {
+    else if (l_flag) {
         if (symlink(nach, res) != 0)
         {
             printf("ошибка создания символической ссылки");
@@ -140,8 +139,7 @@ int main(int argc, char **argv)
         }
         printf("символическая ссылка создана: '%s' -> '%s'\n", res, nach);
     }
-    else if (m_flag)
-    {
+    else if (m_flag) {
         if (rename(nach, res) != 0)
         {
             printf("ошибка перемещения файла");
@@ -149,13 +147,28 @@ int main(int argc, char **argv)
         }
         printf("файл перемещен: '%s' -> '%s'\n", nach, res);
     }
-    else
-    {
-        if (!copy_file(nach, res))
-            return 1;
-        printf("файл скопирован: '%s' -> '%s'\n", nach, res);
-    }
-        
+    else {		
+		struct stat st;
+		if (lstat(nach, &st) == 0 && S_ISLNK(st.st_mode)) {
+			char buf2[BUFFER_S];
+			ssize_t len = readlink(nach, buf2, sizeof(buf2) - 1);
+			if (len == -1) {
+				perror("ошибка чтения символической ссылки");
+				return 1;
+			}
+			buf2[len] = '\0';
+			if (symlink(buf2, res) != 0) {
+				perror("ошибка создания символической ссылки");
+				return 1;
+			}
+			printf("файл скопирован(симв ссылка): '%s' -> '%s'\n", nach, res);
+		}
+		else {
+			if (!copy_file(nach, res))
+				return 1;
+			printf("файл скопирован: '%s' -> '%s'\n", nach, res);
+		}
+	}    
 	return 0;
 }
 
